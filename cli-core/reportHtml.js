@@ -8,13 +8,13 @@ const translator = require('./translator.js').translator;
  * Css class best practices
  */
 const cssBestPractices = {
-    A: 'checkmark-success',
-    B: 'close-warning',
-    C: 'close-error'
+    A : 'checkmark-success',
+    B : 'close-warning',
+    C : 'close-error'
 }
 
 //create html report for all the analysed pages and recap on the first sheet
-async function create_html_report(reportObject, options) {
+async function create_html_report(reportObject,options){
     //Path of the output file
     const OUTPUT_FILE = path.resolve(options.report_output_file);
     if (!OUTPUT_FILE.toLowerCase().endsWith('.html')) {
@@ -26,18 +26,18 @@ async function create_html_report(reportObject, options) {
 
     //initialise progress bar
     let progressBar;
-    if (!options.ci) {
+    if (!options.ci){
         progressBar = new ProgressBar(' Create HTML report       [:bar] :percent     Remaining: :etas     Time: :elapseds', {
             complete: '=',
             incomplete: ' ',
             width: 40,
-            total: fileList.length + 2
+            total: fileList.length+2
         });
         progressBar.tick()
     } else {
         console.log('Creating HTML report ...');
     }
-
+    
     // Read all reports
     const allReportsVariables = readAllReports(fileList);
 
@@ -45,7 +45,7 @@ async function create_html_report(reportObject, options) {
     const globalReportVariables = readGlobalReport(globalReport.path, allReportsVariables);
 
     // write global report
-    const templateEngine = new TemplateEngine.TemplateEngine();
+    const templateEngine = new TemplateEngine.TemplateEngine(); 
     writeGlobalReport(templateEngine, globalReportVariables, OUTPUT_FILE);
 
     // write all reports
@@ -56,7 +56,7 @@ async function create_html_report(reportObject, options) {
 function readAllReports(fileList) {
     let allReportsVariables = [];
     let reportVariables = {};
-    fileList.forEach((file) => {
+    fileList.forEach((file)=>{
         let report_data = JSON.parse(fs.readFileSync(file.path).toString());
         const pageName = report_data.pageInformations.name || report_data.pageInformations.url;
         const pageFilename = report_data.pageInformations.name ? `${removeForbiddenCharacters(report_data.pageInformations.name)}.html` : `${report_data.index}.html`;
@@ -113,7 +113,7 @@ function readGlobalReport(path, allReportsVariables) {
         nbErrors: globalReport_data.errors.length,
         allReportsVariables,
         worstRulesHeader: hasWorstRules ? `Top ${globalReport_data.worstRules.length} des règles à corriger` : '',
-        worstRules: hasWorstRules ? globalReport_data.worstRules.map((worstRule, index) => `#${index + 1} ${translator.translateRule(worstRule)}`) : '',
+        worstRules: hasWorstRules ? globalReport_data.worstRules.map((worstRule, index) => `#${index+1} ${translator.translateRule(worstRule)}`) : '',
         cssTablePagesSize: hasWorstRules ? 'col-md-9' : 'col-md-12'
     };
     return globalReportVariables;
@@ -162,28 +162,24 @@ function extractBestPractices(bestPracticesFromReport) {
 }
 
 function writeGlobalReport(templateEngine, globalReportVariables, outputFile) {
-
-    let globalTemplate = fs.readFileSync(__dirname + "/template/global.html").toString()
-
-    templateEngine.process(globalTemplate, globalReportVariables)
-        .then(globalReportHtml => {
-            fs.writeFileSync(outputFile, globalReportHtml);
-        })
-        .catch(error => {
-            console.log("Error while reading HTML global template : ", error)
-        });
+    templateEngine.processFile(__dirname + "/template/global.html", globalReportVariables)
+    .then(globalReportHtml => {
+        fs.writeFileSync(outputFile, globalReportHtml);
+    })
+    .catch(error => {
+        console.log("Error while reading HTML global template : ", error)
+    });
 }
 
 function writeAllReports(templateEngine, allReportsVariables, outputFolder) {
     allReportsVariables.forEach(reportVariables => {
-        let pageTemplate = fs.readFileSync(__dirname + "/template/page.html").toString()
-        templateEngine.process(pageTemplate, reportVariables)
-            .then(singleReportHtml => {
-                fs.writeFileSync(`${outputFolder}/${reportVariables.filename}`, singleReportHtml);
-            })
-            .catch(error => {
-                console.log(`Error while reading HTML template ${reportVariables.filename} : `, error)
-            });
+        templateEngine.processFile(__dirname + "/template/page.html", reportVariables)
+        .then(singleReportHtml => {
+            fs.writeFileSync(`${outputFolder}/${reportVariables.filename}`, singleReportHtml);
+        })
+        .catch(error => {
+            console.log(`Error while reading HTML template ${reportVariables.filename} : `, error)
+        });
     });
 }
 
