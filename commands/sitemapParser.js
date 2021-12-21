@@ -4,12 +4,6 @@ const YAML = require('yaml');
 const path = require('path');
 const sitemap = new Sitemapper();
 
-class Page {
-  constructor(url) {
-    this.url = url;
-  }
-}
-
 module.exports = (options) => {
   //handle inputs
   const SITEMAP_URL = options.sitemap_url;
@@ -17,7 +11,9 @@ module.exports = (options) => {
   //parse sitemap
   sitemap.fetch(SITEMAP_URL).then(function(res) {
     try {
-      const urls = res.sites.map(site => new Page(site));
+      const urls = res.sites.map(site => {
+        return { url: site };
+      });
       fs.writeFileSync(OUTPUT_FILE,YAML.stringify(urls))
     } catch (error) {
       throw ` yaml_output_file : Path "${OUTPUT_FILE}" cannot be reached.`
