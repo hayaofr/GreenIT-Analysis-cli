@@ -26,7 +26,7 @@ async function analyse_core(options) {
 
     // Add proxy conf in browserArgs
     let proxy = {};
-    if (options.proxy) {
+    if(options.proxy) {
         proxy = readProxy(options.proxy);
     }
 
@@ -49,7 +49,7 @@ async function analyse_core(options) {
     let reports;
     try {
         //handle login
-        if (options.login) {
+        if (options.login){
             const LOGIN_YAML_FILE = path.resolve(options.login);
             let loginInfos;
             try {
@@ -57,6 +57,7 @@ async function analyse_core(options) {
             } catch (error) {
                 throw ` --login : "${LOGIN_YAML_FILE}" is not a valid YAML file.`
             }
+            console.log(loginInfos)
             await login(browser, loginInfos)
         }
         //analyse
@@ -64,12 +65,12 @@ async function analyse_core(options) {
     } finally {
         //close browser
         let pages = await browser.pages();
-        await Promise.all(pages.map(page => page.close()));
+        await Promise.all(pages.map(page =>page.close()));
         await browser.close()
     }
     //create report
     let reportObj = await create_global_report(reports, options);
-    if (options.format === 'html') {
+    if(options.format === 'html') {
         await create_html_report(reportObj, options);
     } else {
         await create_XLSX_report(reportObj, options);
@@ -95,8 +96,7 @@ function readHeaders(headersFile) {
     const HEADERS_YAML_FILE = path.resolve(headersFile);
     let headers;
     try {
-        const headersFile = fs.readFileSync(HEADERS_YAML_FILE).toString();
-        headers = YAML.parse(headersFile);
+        headers = YAML.parse(fs.readFileSync(HEADERS_YAML_FILE).toString());
     } catch (error) {
         throw ` --headers : "${HEADERS_YAML_FILE}" is not a valid YAML file.`
     }
@@ -105,7 +105,7 @@ function readHeaders(headersFile) {
 
 //export method that handle error
 function analyse(options) {
-    analyse_core(options).catch(e => console.error("ERROR : \n", e))
+    analyse_core(options).catch(e=>console.error("ERROR : \n", e))
 }
 
 module.exports = analyse;
